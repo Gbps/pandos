@@ -1,0 +1,2 @@
+#!/bin/bash
+nasm -felf32 $1 -o $(dirname ${1%.*})/../build/$(basename ${1%.*}).o

@@ -1,0 +1,3 @@
+#!/bin/bash
+cp ../build/pandos.bin ../grub/isodir/boot/pandos.bin
+grub-mkrescue -o ../pandos.iso ../grub/isodir

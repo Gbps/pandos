@@ -1,0 +1,15 @@
+#!/bin/bash
+
+SYSROOT_OPT="--sysroot $PANDOS_ROOT/pandos/sysroot"
+CMD_OPTS="-ffreestanding -nostdlib -c -O3 -emit-llvm"
+TARGET_OPT="--target=i686-pc-none-elf"
+INCLUDES="-I $PANDOS_ROOT/toolchain/build/llvm2/Release+Asserts/lib/clang/3.4/include/"
+INPATH=$(readlink -f $1)
+INNAME=${INPATH%.*}
+INFILE=$INPATH
+TARGET_BC=$INNAME.bc
+TARGET_O=$INNAME.o
+./llvm2_bin/clang $SYSROOT_OPT $CMD_OPTS $TARGET_OPT $INCLUDES $INFILE -o $TARGET_BC
+./llvm2_bin/llc --x86-asm-syntax=intel -filetype=obj $TARGET_BC
+rm $TARGET_BC
+mv $TARGET_O $(dirname $TARGET_O)/../build/$(basename $TARGET_O)

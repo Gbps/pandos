@@ -1,0 +1,6 @@
+#!/bin/bash
+SCRIPTPATH=${BASH_SOURCE%/*}
+OPTIONS="-m elf_i386"
+SCRIPT_OPTIONS="-T `pwd`/../src/link/linker.ld"
+echo $SCRIPT_OPTIONS
+ld $OPTIONS $SCRIPT_OPTIONS $1 -o pandos.bin
