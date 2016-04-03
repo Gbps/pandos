@@ -80,10 +80,36 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
     const size_t index = y * VGA_WIDTH + x;
     terminal_buffer[index] = make_vgaentry(c, color);
 }
- 
-void terminal_putchar(char c) {
+
+bool terminal_handlewhitespace(char c)
+{
+	switch( c )
+	{
+		case '\n':
+			terminal_row += 1;
+			break;
+        case '\r':
+            terminal_column = 0;
+            break;
+        case '\t':
+            terminal_column += 5;
+            break;
+		default:
+			return false;
+			break;
+	}
+
+	return true;
+
+}
+void terminal_putchar(char c) 
+{
+	if (terminal_handlewhitespace(c))
+	{
+		return;
+	}
     terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
-    if (++terminal_column == VGA_WIDTH) {
+	if (++terminal_column == VGA_WIDTH) {
         terminal_column = 0;
         if (++terminal_row == VGA_HEIGHT) {
             terminal_row = 0;
