@@ -1,0 +1,3 @@
+hbreak kernel_main
+break terminal_initialize
+

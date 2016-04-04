@@ -1,0 +1,3 @@
+#!/bin/bash
+gnome-terminal -e "gdb -x './qemu-gdb'" & disown
+qemu-system-i386 -s -S -cdrom pandos.iso

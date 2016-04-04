@@ -7,7 +7,7 @@ asm_src_o = $(asm_src:.asm=.o)
 
 CLANG = ./bin/llvm2_bin/clang
 SYSROOT = --sysroot "$(ROOT_DIR)/sysroot"
-CFLAGS = $(SYSROOT) -ffreestanding -nostdlib -O3 -emit-llvm -S --target=i686-pc-none-elf
+CFLAGS = $(SYSROOT) -ffreestanding -nostdlib -g -O3 -emit-llvm -S --target=i686-pc-none-elf
 
 LLC = ./bin/llvm2_bin/llc
 LLCFLAGS = --x86-asm-syntax=intel -filetype=obj
@@ -36,6 +36,9 @@ LINKERFLAGS = -m elf_i386 -T $(LINKER_SCRIPT)
 
 # Full build
 all: pandos.iso
+
+run: all
+	./qemu-run
 
 # Compile all into objects
 ./build/pandos.bin: $(c_src_bc) $(asm_src_o)

@@ -1,0 +1,93 @@
+global _loader
+
+
+; Declare constants used for creating a multiboot header.
+MBALIGN     equ  1<<0                   ; align loaded modules on page boundaries
+MEMINFO     equ  1<<1                   ; provide memory map
+FLAGS       equ  MBALIGN | MEMINFO      ; this is the Multiboot 'flag' field
+MAGIC       equ  0x1BADB002             ; 'magic number' lets bootloader find the header
+CHECKSUM    equ -(MAGIC + FLAGS)        ; checksum of above, to prove we are multiboot
+ 
+; Declare a header as in the Multiboot Standard. We put this into a special
+; section so we can force the header to be in the start of the final program.
+; You don't need to understand all these details as it is just magic values that
+; is documented in the multiboot standard. The bootloader will search for this
+; magic sequence and recognize us as a multiboot kernel.
+ 
+
+ KERNEL_VIRTUAL_BASE equ 0xC0000000 ; 3GB
+ KERNEL_PAGE_NUMBER equ (KERNEL_VIRTUAL_BASE >> 22) ; Page directory index of kernel's 4MB PTE
+
+section .data
+align 0x1000
+BootPageDirectory:
+	; This page directory entry identity maps the first 4MB for boot
+	; All bits are cleared except the following:
+	; bit 7: PS The kernel page is 4MB
+	; bit 1: RW The kernel page is RW
+	; bit 0: P The kernel page is present.
+	PS     equ  1<<7
+	RW     equ  1<<1
+	P      equ  1<<0
+	RWP_PAGE       equ  PS | RW | P
+
+	; This page exists because otherwise the kernel will crash immediately after paging
+	; is enabled because it can't fetch the next instruction. We'll unmap this page later...
+	dd RWP_PAGE
+	times (KERNEL_PAGE_NUMBER - 1) dd 0 ; Pages before kernel space.
+	dd RWP_PAGE
+	times (1024 - KERNEL_PAGE_NUMBER - 1) dd 0 ; Pages after kernel space.
+
+
+STACKSIZE equ 0x4000
+
+global loader
+loader equ (_loader - 0xC0000000)
+
+section .text
+align 4
+
+MultibootHeader:
+	dd MAGIC
+	dd FLAGS
+	dd CHECKSUM
+
+_loader:
+	; Get physical page address
+	mov ecx, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
+ 	mov cr3, ecx
+
+ 	mov ecx, cr4
+ 	or ecx, 0x00000010 ; Enable 4MB pages
+ 	mov cr4, ecx 
+
+ 	mov ecx, cr0
+ 	or ecx, 0x80000000 ; Set PG bit in CR0 to enable paging
+ 	mov cr0, ecx
+
+ 	; Start fetching instructions in kernel space
+ 	; JMP to 0xC01000000
+ 	lea ecx, [_start]
+ 	jmp ecx
+
+
+_start:
+	; Unmap the first 4MB of physical address space, since it's not needed anymore.
+	mov dword [BootPageDirectory], 0
+	invlpg [0] 
+	
+	mov esp, stack+STACKSIZE
+	
+	extern kernel_main
+	call kernel_main
+	
+	cli
+.hang:
+	hlt
+	jmp .hang
+
+
+section .bss
+align 32
+stack:
+	resb STACKSIZE

@@ -1,73 +1,95 @@
-; Declare constants used for creating a multiboot header.
-MBALIGN     equ  1<<0                   ; align loaded modules on page boundaries
-MEMINFO     equ  1<<1                   ; provide memory map
-FLAGS       equ  MBALIGN | MEMINFO      ; this is the Multiboot 'flag' field
-MAGIC       equ  0x1BADB002             ; 'magic number' lets bootloader find the header
-CHECKSUM    equ -(MAGIC + FLAGS)        ; checksum of above, to prove we are multiboot
+global _loader                          ; Make entry point visible to linker.
+extern _main                            ; _main is defined elsewhere
  
-; Declare a header as in the Multiboot Standard. We put this into a special
-; section so we can force the header to be in the start of the final program.
-; You don't need to understand all these details as it is just magic values that
-; is documented in the multiboot standard. The bootloader will search for this
-; magic sequence and recognize us as a multiboot kernel.
-section .multiboot
-align 4
-	dd MAGIC
-	dd FLAGS
-	dd CHECKSUM
+; setting up the Multiboot header - see GRUB docs for details
+MODULEALIGN equ  1<<0             ; align loaded modules on page boundaries
+MEMINFO     equ  1<<1             ; provide memory map
+FLAGS       equ  MODULEALIGN | MEMINFO  ; this is the Multiboot 'flag' field
+MAGIC       equ    0x1BADB002     ; 'magic number' lets bootloader find the header
+CHECKSUM    equ -(MAGIC + FLAGS)  ; checksum required
  
-; Currently the stack pointer register (esp) points at anything and using it may
-; cause massive harm. Instead, we'll provide our own stack. We will allocate
-; room for a small temporary stack by creating a symbol at the bottom of it,
-; then allocating 16384 bytes for it, and finally creating a symbol at the top.
-section .bootstrap_stack, nobits
-align 4
-stack_bottom:
-resb 16384
-stack_top:
+; This is the virtual base address of kernel space. It must be used to convert virtual
+; addresses into physical addresses until paging is enabled. Note that this is not
+; the virtual address where the kernel image itself is loaded -- just the amount that must
+; be subtracted from a virtual address to get a physical address.
+KERNEL_VIRTUAL_BASE equ 0xC0000000                  ; 3GB
+KERNEL_PAGE_NUMBER equ (KERNEL_VIRTUAL_BASE >> 22)  ; Page directory index of kernel's 4MB PTE.
  
-; The linker script specifies _start as the entry point to the kernel and the
-; bootloader will jump to this position once the kernel has been loaded. It
-; doesn't make sense to return from this function as the bootloader is gone.
+ 
+section .data
+align 0x1000
+BootPageDirectory:
+    ; This page directory entry identity-maps the first 4MB of the 32-bit physical address space.
+    ; All bits are clear except the following:
+    ; bit 7: PS The kernel page is 4MB.
+    ; bit 1: RW The kernel page is read/write.
+    ; bit 0: P  The kernel page is present.
+    ; This entry must be here -- otherwise the kernel will crash immediately after paging is
+    ; enabled because it can't fetch the next instruction! It's ok to unmap this page later.
+    dd 0x00000083
+    times (KERNEL_PAGE_NUMBER - 1) dd 0                 ; Pages before kernel space.
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x00000083
+    times (1024 - KERNEL_PAGE_NUMBER - 1) dd 0  ; Pages after the kernel image.
+ 
+ 
 section .text
-global _start
-_start:
-	; Welcome to kernel mode! We now have sufficient code for the bootloader to
-	; load and run our operating system. It doesn't do anything interesting yet.
-	; Perhaps we would like to call printf("Hello, World\n"). You should now
-	; realize one of the profound truths about kernel mode: There is nothing
-	; there unless you provide it yourself. There is no printf function. There
-	; is no <stdio.h> header. If you want a function, you will have to code it
-	; yourself. And that is one of the best things about kernel development:
-	; you get to make the entire system yourself. You have absolute and complete
-	; power over the machine, there are no security restrictions, no safe
-	; guards, no debugging mechanisms, there is nothing but what you build.
+align 4
+MultiBootHeader:
+    dd MAGIC
+    dd FLAGS
+    dd CHECKSUM
  
-	; By now, you are perhaps tired of assembly language. You realize some
-	; things simply cannot be done in C, such as making the multiboot header in
-	; the right section and setting up the stack. However, you would like to
-	; write the operating system in a higher level language, such as C or C++.
-	; To that end, the next task is preparing the processor for execution of
-	; such code. C doesn't expect much at this point and we only need to set up
-	; a stack. Note that the processor is not fully initialized yet and stuff
-	; such as floating point instructions are not available yet.
+; reserve initial kernel stack space -- that's 16k.
+STACKSIZE equ 0x4000
  
-	; To set up a stack, we simply set the esp register to point to the top of
-	; our stack (as it grows downwards).
-	mov esp, stack_top
+; setting up entry point for linker
+global loader
+loader equ (_loader - 0xC0000000)
+
  
-	; We are now ready to actually execute C code. We cannot embed that in an
-	; assembly file, so we'll create a kernel.c file in a moment. In that file,
-	; we'll create a C entry point called kernel_main and call it here.
+_loader:
+	; NOTE: Until paging is set up, the code must be position-independent and use physical
+    ; addresses, not virtual ones!
+	mov ecx, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
+    mov cr3, ecx                                        ; Load Page Directory Base Register.
+ 
+    mov ecx, cr4
+    or ecx, 0x00000010                          ; Set PSE bit in CR4 to enable 4MB pages.
+    mov cr4, ecx
+ 
+    mov ecx, cr0
+    or ecx, 0x80000000                          ; Set PG bit in CR0 to enable paging.
+    mov cr0, ecx
+ 
+    ; Start fetching instructions in kernel space.
+    ; Since eip at this point holds the physical address of this command (approximately 0x00100000)
+    ; we need to do a long jump to the correct virtual address of StartInHigherHalf which is
+    ; approximately 0xC0100000.
+    lea ecx, [StartInHigherHalf]
+    jmp ecx                                                     ; NOTE: Must be absolute jump!
+ 
+StartInHigherHalf:
+    ; Unmap the identity-mapped first 4MB of physical address space. It should not be needed
+    ; anymore.
+    mov dword [BootPageDirectory], 0
+    invlpg [0]
+ 
+    ; NOTE: From now on, paging should be enabled. The first 4MB of physical address space is
+    ; mapped starting at KERNEL_VIRTUAL_BASE. Everything is linked to this address, so no more
+    ; position-independent code or funny business with virtual-to-physical address translation
+    ; should be necessary. We now have a higher-half kernel.
+    mov esp, stack+STACKSIZE           ; set up the stack
+
+    ; pass Multiboot info structure -- WARNING: This is a physical address and may not be
+    ; in the first 4MB!
+
 	extern kernel_main
-	call kernel_main
+    call  kernel_main                  ; call kernel proper
+    hlt                          ; halt machine should kernel return
  
-	; In case the function returns, we'll want to put the computer into an
-	; infinite loop. To do that, we use the clear interrupt ('cli') instruction
-	; to disable interrupts, the halt instruction ('hlt') to stop the CPU until
-	; the next interrupt arrives, and jumping to the halt instruction if it ever
-	; continues execution, just to be safe.
-	cli
-.hang:
-	hlt
-	jmp .hang
+ 
+section .bss
+align 32
+stack:
+    resb STACKSIZE      ; reserve 16k stack on a uint64_t boundary
