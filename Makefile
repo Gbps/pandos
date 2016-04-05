@@ -7,7 +7,7 @@ asm_src_o = $(asm_src:.asm=.o)
 
 CLANG = ./bin/llvm2_bin/clang
 SYSROOT = --sysroot "$(ROOT_DIR)/sysroot"
-CFLAGS = $(SYSROOT) -ffreestanding -nostdlib -g -O3 -emit-llvm -S --target=i686-pc-none-elf
+CFLAGS = $(SYSROOT) -ffreestanding -nostdlib -g -emit-llvm -S --target=i686-pc-none-elf
 
 LLC = ./bin/llvm2_bin/llc
 LLCFLAGS = --x86-asm-syntax=intel -filetype=obj

@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "kernel.h"
+#include "paging.h"
 /* Check if the compiler thinks we are targeting the wrong operating system. */
 #if defined(__linux__)
 #error "You are not using a cross-compiler, you will most certainly run into trouble"
@@ -135,4 +136,6 @@ void kernel_main() {
          * This is normal.
          */
     terminal_writestring("Hello, kernel World!\n");
+
+    void* test_page = mmap(1024*1024);
 }

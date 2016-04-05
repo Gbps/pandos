@@ -1,4 +1,4 @@
-
+ 
 #include <stdint.h>
 
 typedef struct page_dict_t
@@ -14,6 +14,7 @@ typedef struct page_dict_t
             uint32_t writethrough : 1;
             uint32_t cachedisabled : 1;
             uint32_t accessed : 1;
+            uint32_t _zero : 1;
             uint32_t page_size : 1;
             uint32_t _ignored : 1;
             uint32_t avail : 3 ;
@@ -42,3 +43,10 @@ typedef struct page_table_t
         };
     };
 } page_table_t;
+
+void* mmap( int length );
+
+bool munmap( void* mmaped_addr, int length);
+
+extern page_dict_t* BootPageDirectory;
+#define KERNEL_PAGE_NUMBER (0xC0000000>>22)
