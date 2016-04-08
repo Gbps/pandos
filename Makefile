@@ -7,17 +7,17 @@ asm_src_o = $(asm_src:.asm=.o)
 
 CLANG = ./bin/llvm2_bin/clang
 SYSROOT = --sysroot "$(ROOT_DIR)/sysroot"
-CFLAGS = $(SYSROOT) -ffreestanding -nostdlib -g -emit-llvm -S --target=i686-pc-none-elf
+CFLAGS = $(SYSROOT) -O0 -ffreestanding -nostdlib -g -emit-llvm -S --target=i686-pc-none-elf
 
 LLC = ./bin/llvm2_bin/llc
-LLCFLAGS = --x86-asm-syntax=intel -filetype=obj
+LLCFLAGS = -mcpu=i386 -x86-asm-syntax=intel -filetype=obj
 
 ASM = nasm
 ASMFLAGS = -felf32
 
 LINKER = ld
 LINKER_SCRIPT = $(ROOT_DIR)/src/link/linker.ld
-LINKERFLAGS = -m elf_i386 -T $(LINKER_SCRIPT)
+LINKERFLAGS = --build-id=none -m elf_i386 -T $(LINKER_SCRIPT)
 
 # Disable built-in rules
 %.o: %.c
@@ -37,9 +37,15 @@ LINKERFLAGS = -m elf_i386 -T $(LINKER_SCRIPT)
 # Full build
 all: pandos.iso
 
-run: all
-	./qemu-run
+run-bochs: all
+	bochs
 
+run: all
+	#gnome-terminal -e "gdb -x 'bochs-gdb-conf'"
+	gnome-terminal -e "gdb -x 'qemu-gdb'"
+	qemu-system-i386 -cdrom pandos.iso -S -s
+
+symbols:
 # Compile all into objects
 ./build/pandos.bin: $(c_src_bc) $(asm_src_o)
 	$(LINKER) $(LINKERFLAGS) $^ -o $@

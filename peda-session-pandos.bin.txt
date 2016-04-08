@@ -1,3 +1,2 @@
 hbreak kernel_main
-hbreak paging.c:49
 

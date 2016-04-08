@@ -18,7 +18,7 @@ typedef struct page_dict_t
             uint32_t page_size : 1;
             uint32_t _ignored : 1;
             uint32_t avail : 3 ;
-            uint32_t page_addr : 20;
+            uint32_t phys_addr : 20;
         };
     };
 } page_dict_t;
@@ -44,9 +44,11 @@ typedef struct page_table_t
     };
 } page_table_t;
 
-void* mmap( int length );
+void* mmap( int length, void* addr_base);
+
+void* kmmap( int length );
 
 bool munmap( void* mmaped_addr, int length);
 
-extern page_dict_t* BootPageDirectory;
+extern page_dict_t BootPageDirectory;
 #define KERNEL_PAGE_NUMBER (0xC0000000>>22)

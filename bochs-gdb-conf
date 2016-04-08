@@ -1,0 +1,6 @@
+target remote localhost:1234
+symbol-file ./build/pandos.bin
+set architecture i386:x86-64:intel
+hbreak kernel_main
+c
+
