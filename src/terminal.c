@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "terminal.h"
+#include "string.h"
 #include "mem.h"
 /* Hardware text mode color constants. */
 

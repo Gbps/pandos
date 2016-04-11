@@ -1,6 +1,8 @@
 #include "liballoc.h"
 #include <stddef.h>
 #include <stdint.h>
+
+//#define DEBUG
 /**  Durand's Amazing Super Duper Memory functions.  */
 
 #define VERSION 	"1.1"
@@ -50,8 +52,8 @@
 #define LIBALLOC_DEAD	0xdeaddead
 
 #if defined DEBUG || defined INFO
-#include <stdio.h>
-#include <stdlib.h>
+#include "string.h"
+//#include <stdlib.h>
 
 #define FLUSH()		fflush( stdout )
 

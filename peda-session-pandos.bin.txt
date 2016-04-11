@@ -1,2 +1,3 @@
 hbreak kernel_main
+hbreak *(keyboard_handler+6)
 

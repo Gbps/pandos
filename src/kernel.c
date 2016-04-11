@@ -7,9 +7,15 @@
 #include "mem.h"
 #include "terminal.h"
 #include "liballoc.h"
+#include "interrupts.h"
+#include "gdt.h"
 
 void kernel_main() 
 {
+    asm("xchg %bx, %bx");
+    gdt_init();
+    idt_init();
+
     /* Initialize terminal interface */
     terminal_initialize();
  

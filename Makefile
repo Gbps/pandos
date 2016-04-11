@@ -10,7 +10,7 @@ SYSROOT = --sysroot "$(ROOT_DIR)/sysroot"
 CFLAGS = $(SYSROOT) -O0 -ffreestanding -nostdlib -g -emit-llvm -S --target=i686-pc-none-elf
 
 LLC = ./bin/llvm2_bin/llc
-LLCFLAGS = -mcpu=i386 -x86-asm-syntax=intel -filetype=obj
+LLCFLAGS = -mcpu=i686 -x86-asm-syntax=intel -filetype=obj
 
 ASM = nasm
 ASMFLAGS = -felf32

@@ -1,0 +1,1 @@
+#define size_t uint32_t
