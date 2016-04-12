@@ -97,8 +97,10 @@ StartInHigherHalf:
 	extern kernel_main
     call  kernel_main                  ; call kernel proper
     xchg bx, bx
-    int 0x21
-    hlt                          ; halt machine should kernel return
+hltloop:
+    ; Infinite loop if kernel_main returns
+    hlt
+    jmp hltloop
  
  
 gdt_flush:

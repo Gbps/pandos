@@ -13,6 +13,7 @@ gdt_ptr_t   gdt_ptr;
 
 void gdt_init()
 {
+   // Setup a flat segmentation model
    gdt_ptr.limit = (sizeof(gdt_entry_t) * 5) - 1;
    gdt_ptr.base  = (uint32_t)&gdt_entries;
 

@@ -30,7 +30,14 @@ entry:
   store i8* %call3, i8** %test_mem_2, align 4, !dbg !24
   %2 = load i8** %test_mem, align 4, !dbg !25
   call void @terminal_writestring(i8* %2) #4, !dbg !25
-  ret void, !dbg !26
+  br label %while.body, !dbg !26
+
+while.body:                                       ; preds = %entry, %while.body
+  call void asm sideeffect "hlt", "~{dirflag},~{fpsr},~{flags}"() #3, !dbg !27, !srcloc !29
+  br label %while.body, !dbg !30
+
+return:                                           ; No predecessors!
+  ret void, !dbg !31
 }
 
 declare void @gdt_init(...) #1
@@ -70,18 +77,23 @@ attributes #4 = { nobuiltin }
 !9 = metadata !{metadata !"clang version 3.4 (http://llvm.org/git/clang.git 82a2911a94947e20ac4fd961b6322adf74ad9224) (http://llvm.org/git/llvm.git 52244da7f2b3def646900520668b859343b84a33)"}
 !10 = metadata !{i32 15, i32 0, metadata !4, null}
 !11 = metadata !{i32 237}
-!12 = metadata !{i32 16, i32 0, metadata !4, null}
-!13 = metadata !{i32 17, i32 0, metadata !4, null}
-!14 = metadata !{i32 20, i32 0, metadata !4, null}
-!15 = metadata !{i32 22, i32 0, metadata !4, null}
-!16 = metadata !{i32 786688, metadata !4, metadata !"test_mem", metadata !5, i32 24, metadata !17, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [test_mem] [line 24]
+!12 = metadata !{i32 17, i32 0, metadata !4, null}
+!13 = metadata !{i32 19, i32 0, metadata !4, null}
+!14 = metadata !{i32 22, i32 0, metadata !4, null}
+!15 = metadata !{i32 24, i32 0, metadata !4, null}
+!16 = metadata !{i32 786688, metadata !4, metadata !"test_mem", metadata !5, i32 26, metadata !17, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [test_mem] [line 26]
 !17 = metadata !{i32 786447, null, null, metadata !"", i32 0, i64 32, i64 32, i64 0, i32 0, null} ; [ DW_TAG_pointer_type ] [line 0, size 32, align 32, offset 0] [from ]
-!18 = metadata !{i32 24, i32 0, metadata !4, null}
-!19 = metadata !{i32 786688, metadata !4, metadata !"test_mem_2", metadata !5, i32 25, metadata !17, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [test_mem_2] [line 25]
-!20 = metadata !{i32 25, i32 0, metadata !4, null}
-!21 = metadata !{i32 27, i32 0, metadata !4, null}
-!22 = metadata !{i32 28, i32 0, metadata !4, null}
-!23 = metadata !{i32 30, i32 0, metadata !4, null}
-!24 = metadata !{i32 31, i32 0, metadata !4, null}
-!25 = metadata !{i32 33, i32 0, metadata !4, null}
-!26 = metadata !{i32 35, i32 0, metadata !4, null}
+!18 = metadata !{i32 26, i32 0, metadata !4, null}
+!19 = metadata !{i32 786688, metadata !4, metadata !"test_mem_2", metadata !5, i32 27, metadata !17, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [test_mem_2] [line 27]
+!20 = metadata !{i32 27, i32 0, metadata !4, null}
+!21 = metadata !{i32 29, i32 0, metadata !4, null}
+!22 = metadata !{i32 30, i32 0, metadata !4, null}
+!23 = metadata !{i32 32, i32 0, metadata !4, null}
+!24 = metadata !{i32 33, i32 0, metadata !4, null}
+!25 = metadata !{i32 35, i32 0, metadata !4, null}
+!26 = metadata !{i32 37, i32 0, metadata !4, null}
+!27 = metadata !{i32 40, i32 0, metadata !28, null}
+!28 = metadata !{i32 786443, metadata !1, metadata !4, i32 38, i32 0, i32 0} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/kernel.c]
+!29 = metadata !{i32 736}
+!30 = metadata !{i32 41, i32 0, metadata !28, null}
+!31 = metadata !{i32 42, i32 0, metadata !4, null}

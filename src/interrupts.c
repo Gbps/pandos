@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "stddef.h"
 #include "inline.c"
+#include "terminal.h"
 
 #define IDT_SIZE 1024
 
@@ -44,18 +45,9 @@ struct interrupt_frame
 };
 
 
-// LLVM compiles naked functions with 6 bytes of prologue and a ret instruction.
-// Address this function using func_name+6 instead
-__attribute__ ((naked))
-void keyboard_handler(struct interrupt_frame *frame)
+void keyboard_handler(uint8_t scancode)
 {
-    asm("pusha");
-
-    asm("xchg %bx, %bx");
-    /* do something */
-
-    asm("popa");
-    asm("iret");
+    terminal_writestring("Got keypress!\n");
 }
 
 void idt_init(void)
@@ -64,7 +56,7 @@ void idt_init(void)
     unsigned long idt_addr;
     unsigned long idt_ptr[2];
 
-    keyboard_address = ((unsigned long)keyboard_handler)+6;
+    keyboard_address = (unsigned long)&WRAP_keyboard_handler;
     IDT[0x21].offset_lowerbits = keyboard_address & 0xFFFF;
     IDT[0x21].selector = KERNEL_CODE_SEGMENT_OFFSET; /* KERNEL_CODE_SEGMENT_OFFSET from GRUB~! */
     IDT[0x21].zero = 0;

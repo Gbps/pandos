@@ -13,7 +13,9 @@
 void kernel_main() 
 {
     asm("xchg %bx, %bx");
+
     gdt_init();
+
     idt_init();
 
     /* Initialize terminal interface */
@@ -32,4 +34,9 @@ void kernel_main()
 
     terminal_writestring((const char*)test_mem);
 
+    while(true)
+    {
+        // Halt and wait for interrupts now that kernel is done.
+        asm("hlt");
+    }
 }
