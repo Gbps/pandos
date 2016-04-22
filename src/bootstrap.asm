@@ -97,6 +97,7 @@ StartInHigherHalf:
 	extern kernel_main
     call  kernel_main                  ; call kernel proper
     xchg bx, bx
+    
 hltloop:
     ; Infinite loop if kernel_main returns
     hlt

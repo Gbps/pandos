@@ -344,6 +344,8 @@ entry:
   %format_begun_at = alloca i8*, align 4
   %c = alloca i8, align 1
   %s = alloca i8*, align 4
+  %x = alloca i32, align 4
+  %res = alloca [5 x i8], align 1
   store i8* %format, i8** %format.addr, align 4
   call void @llvm.dbg.declare(metadata !{i8** %format.addr}, metadata !123), !dbg !124
   call void @llvm.dbg.declare(metadata !{i8** %parameters}, metadata !125), !dbg !129
@@ -356,12 +358,12 @@ entry:
   store i8 0, i8* %rejected_bad_specifier, align 1, !dbg !137
   br label %while.cond, !dbg !138
 
-while.cond:                                       ; preds = %if.end36, %while.end, %entry
+while.cond:                                       ; preds = %if.end139, %while.end, %entry
   %0 = load i8** %format.addr, align 4, !dbg !138
   %1 = load i8* %0, align 1, !dbg !138
   %conv = sext i8 %1 to i32, !dbg !138
   %cmp = icmp ne i32 %conv, 0, !dbg !138
-  br i1 %cmp, label %while.body, label %while.end37, !dbg !138
+  br i1 %cmp, label %while.body, label %while.end140, !dbg !138
 
 while.body:                                       ; preds = %while.cond
   %2 = load i8** %format.addr, align 4, !dbg !139
@@ -442,7 +444,7 @@ if.end17:                                         ; preds = %if.end
 if.then19:                                        ; preds = %if.end17
   br label %incomprehensible_conversion, !dbg !158
 
-incomprehensible_conversion:                      ; preds = %if.else34, %if.then19
+incomprehensible_conversion:                      ; preds = %if.else136, %if.then19
   store i8 1, i8* %rejected_bad_specifier, align 1, !dbg !160
   %22 = load i8** %format_begun_at, align 4, !dbg !161
   store i8* %22, i8** %format.addr, align 4, !dbg !161
@@ -468,7 +470,7 @@ if.then24:                                        ; preds = %if.end20
   %conv26 = trunc i32 %27 to i8, !dbg !168
   store i8 %conv26, i8* %c, align 1, !dbg !168
   call void @print(i8* %c, i32 1) #4, !dbg !169
-  br label %if.end36, !dbg !170
+  br label %if.end139, !dbg !170
 
 if.else:                                          ; preds = %if.end20
   %28 = load i8** %format.addr, align 4, !dbg !171
@@ -492,22 +494,213 @@ if.then30:                                        ; preds = %if.else
   %34 = load i8** %s, align 4, !dbg !177
   %call = call i32 @strlen(i8* %34) #4, !dbg !177
   call void @print(i8* %33, i32 %call) #4, !dbg !177
-  br label %if.end35, !dbg !178
+  br label %if.end138, !dbg !178
 
 if.else34:                                        ; preds = %if.else
-  br label %incomprehensible_conversion, !dbg !179
+  %35 = load i8** %format.addr, align 4, !dbg !179
+  %36 = load i8* %35, align 1, !dbg !179
+  %conv35 = sext i8 %36 to i32, !dbg !179
+  %cmp36 = icmp eq i32 %conv35, 120, !dbg !179
+  br i1 %cmp36, label %if.then38, label %if.else136, !dbg !179
 
-if.end35:                                         ; preds = %if.then30
-  br label %if.end36
+if.then38:                                        ; preds = %if.else34
+  %37 = load i8** %format.addr, align 4, !dbg !181
+  %incdec.ptr39 = getelementptr inbounds i8* %37, i32 1, !dbg !181
+  store i8* %incdec.ptr39, i8** %format.addr, align 4, !dbg !181
+  call void @llvm.dbg.declare(metadata !{i32* %x}, metadata !183), !dbg !184
+  %ap.cur40 = load i8** %parameters, !dbg !184
+  %38 = bitcast i8* %ap.cur40 to i32*, !dbg !184
+  %ap.next41 = getelementptr i8* %ap.cur40, i32 4, !dbg !184
+  store i8* %ap.next41, i8** %parameters, !dbg !184
+  %39 = load i32* %38, !dbg !184
+  store i32 %39, i32* %x, align 4, !dbg !184
+  call void @llvm.dbg.declare(metadata !{[5 x i8]* %res}, metadata !185), !dbg !189
+  %40 = load i32* %x, align 4, !dbg !190
+  %cmp42 = icmp sle i32 %40, 255, !dbg !190
+  br i1 %cmp42, label %if.then44, label %if.else68, !dbg !190
 
-if.end36:                                         ; preds = %if.end35, %if.then24
-  br label %while.cond, !dbg !181
+if.then44:                                        ; preds = %if.then38
+  %41 = load i32* %x, align 4, !dbg !192
+  %and = and i32 %41, 240, !dbg !192
+  %shr = ashr i32 %and, 4, !dbg !192
+  %cmp45 = icmp sle i32 %shr, 9, !dbg !192
+  br i1 %cmp45, label %cond.true, label %cond.false, !dbg !192
 
-while.end37:                                      ; preds = %while.cond
-  %parameters38 = bitcast i8** %parameters to i8*, !dbg !182
-  call void @llvm.va_end(i8* %parameters38), !dbg !182
-  %35 = load i32* %written, align 4, !dbg !183
-  ret i32 %35, !dbg !183
+cond.true:                                        ; preds = %if.then44
+  %42 = load i32* %x, align 4, !dbg !192
+  %and47 = and i32 %42, 240, !dbg !192
+  %shr48 = ashr i32 %and47, 4, !dbg !192
+  %add49 = add nsw i32 48, %shr48, !dbg !192
+  br label %cond.end, !dbg !192
+
+cond.false:                                       ; preds = %if.then44
+  %43 = load i32* %x, align 4, !dbg !192
+  %and50 = and i32 %43, 240, !dbg !192
+  %shr51 = ashr i32 %and50, 4, !dbg !192
+  %add52 = add nsw i32 55, %shr51, !dbg !192
+  br label %cond.end, !dbg !192
+
+cond.end:                                         ; preds = %cond.false, %cond.true
+  %cond = phi i32 [ %add49, %cond.true ], [ %add52, %cond.false ], !dbg !192
+  %conv53 = trunc i32 %cond to i8, !dbg !192
+  %arrayidx54 = getelementptr inbounds [5 x i8]* %res, i32 0, i32 0, !dbg !192
+  store i8 %conv53, i8* %arrayidx54, align 1, !dbg !192
+  %44 = load i32* %x, align 4, !dbg !194
+  %and55 = and i32 %44, 15, !dbg !194
+  %cmp56 = icmp sle i32 %and55, 9, !dbg !194
+  br i1 %cmp56, label %cond.true58, label %cond.false61, !dbg !194
+
+cond.true58:                                      ; preds = %cond.end
+  %45 = load i32* %x, align 4, !dbg !194
+  %and59 = and i32 %45, 15, !dbg !194
+  %add60 = add nsw i32 48, %and59, !dbg !194
+  br label %cond.end64, !dbg !194
+
+cond.false61:                                     ; preds = %cond.end
+  %46 = load i32* %x, align 4, !dbg !194
+  %and62 = and i32 %46, 15, !dbg !194
+  %add63 = add nsw i32 55, %and62, !dbg !194
+  br label %cond.end64, !dbg !194
+
+cond.end64:                                       ; preds = %cond.false61, %cond.true58
+  %cond65 = phi i32 [ %add60, %cond.true58 ], [ %add63, %cond.false61 ], !dbg !194
+  %conv66 = trunc i32 %cond65 to i8, !dbg !194
+  %arrayidx67 = getelementptr inbounds [5 x i8]* %res, i32 0, i32 1, !dbg !194
+  store i8 %conv66, i8* %arrayidx67, align 1, !dbg !194
+  %arraydecay = getelementptr inbounds [5 x i8]* %res, i32 0, i32 0, !dbg !195
+  call void @print(i8* %arraydecay, i32 2) #4, !dbg !195
+  br label %if.end135, !dbg !196
+
+if.else68:                                        ; preds = %if.then38
+  %47 = load i32* %x, align 4, !dbg !197
+  %cmp69 = icmp sle i32 %47, 65535, !dbg !197
+  br i1 %cmp69, label %if.then71, label %if.end134, !dbg !197
+
+if.then71:                                        ; preds = %if.else68
+  %48 = load i32* %x, align 4, !dbg !199
+  %and72 = and i32 %48, 61440, !dbg !199
+  %shr73 = ashr i32 %and72, 12, !dbg !199
+  %cmp74 = icmp sle i32 %shr73, 9, !dbg !199
+  br i1 %cmp74, label %cond.true76, label %cond.false80, !dbg !199
+
+cond.true76:                                      ; preds = %if.then71
+  %49 = load i32* %x, align 4, !dbg !199
+  %and77 = and i32 %49, 61440, !dbg !199
+  %shr78 = ashr i32 %and77, 12, !dbg !199
+  %add79 = add nsw i32 48, %shr78, !dbg !199
+  br label %cond.end84, !dbg !199
+
+cond.false80:                                     ; preds = %if.then71
+  %50 = load i32* %x, align 4, !dbg !199
+  %and81 = and i32 %50, 61440, !dbg !199
+  %shr82 = ashr i32 %and81, 12, !dbg !199
+  %add83 = add nsw i32 55, %shr82, !dbg !199
+  br label %cond.end84, !dbg !199
+
+cond.end84:                                       ; preds = %cond.false80, %cond.true76
+  %cond85 = phi i32 [ %add79, %cond.true76 ], [ %add83, %cond.false80 ], !dbg !199
+  %conv86 = trunc i32 %cond85 to i8, !dbg !199
+  %arrayidx87 = getelementptr inbounds [5 x i8]* %res, i32 0, i32 0, !dbg !199
+  store i8 %conv86, i8* %arrayidx87, align 1, !dbg !199
+  %51 = load i32* %x, align 4, !dbg !201
+  %and88 = and i32 %51, 3840, !dbg !201
+  %shr89 = ashr i32 %and88, 8, !dbg !201
+  %cmp90 = icmp sle i32 %shr89, 9, !dbg !201
+  br i1 %cmp90, label %cond.true92, label %cond.false96, !dbg !201
+
+cond.true92:                                      ; preds = %cond.end84
+  %52 = load i32* %x, align 4, !dbg !201
+  %and93 = and i32 %52, 3840, !dbg !201
+  %shr94 = ashr i32 %and93, 8, !dbg !201
+  %add95 = add nsw i32 48, %shr94, !dbg !201
+  br label %cond.end100, !dbg !201
+
+cond.false96:                                     ; preds = %cond.end84
+  %53 = load i32* %x, align 4, !dbg !201
+  %and97 = and i32 %53, 3840, !dbg !201
+  %shr98 = ashr i32 %and97, 8, !dbg !201
+  %add99 = add nsw i32 55, %shr98, !dbg !201
+  br label %cond.end100, !dbg !201
+
+cond.end100:                                      ; preds = %cond.false96, %cond.true92
+  %cond101 = phi i32 [ %add95, %cond.true92 ], [ %add99, %cond.false96 ], !dbg !201
+  %conv102 = trunc i32 %cond101 to i8, !dbg !201
+  %arrayidx103 = getelementptr inbounds [5 x i8]* %res, i32 0, i32 1, !dbg !201
+  store i8 %conv102, i8* %arrayidx103, align 1, !dbg !201
+  %54 = load i32* %x, align 4, !dbg !202
+  %and104 = and i32 %54, 240, !dbg !202
+  %shr105 = ashr i32 %and104, 4, !dbg !202
+  %cmp106 = icmp sle i32 %shr105, 9, !dbg !202
+  br i1 %cmp106, label %cond.true108, label %cond.false112, !dbg !202
+
+cond.true108:                                     ; preds = %cond.end100
+  %55 = load i32* %x, align 4, !dbg !202
+  %and109 = and i32 %55, 240, !dbg !202
+  %shr110 = ashr i32 %and109, 4, !dbg !202
+  %add111 = add nsw i32 48, %shr110, !dbg !202
+  br label %cond.end116, !dbg !202
+
+cond.false112:                                    ; preds = %cond.end100
+  %56 = load i32* %x, align 4, !dbg !202
+  %and113 = and i32 %56, 240, !dbg !202
+  %shr114 = ashr i32 %and113, 4, !dbg !202
+  %add115 = add nsw i32 55, %shr114, !dbg !202
+  br label %cond.end116, !dbg !202
+
+cond.end116:                                      ; preds = %cond.false112, %cond.true108
+  %cond117 = phi i32 [ %add111, %cond.true108 ], [ %add115, %cond.false112 ], !dbg !202
+  %conv118 = trunc i32 %cond117 to i8, !dbg !202
+  %arrayidx119 = getelementptr inbounds [5 x i8]* %res, i32 0, i32 2, !dbg !202
+  store i8 %conv118, i8* %arrayidx119, align 1, !dbg !202
+  %57 = load i32* %x, align 4, !dbg !203
+  %and120 = and i32 %57, 15, !dbg !203
+  %cmp121 = icmp sle i32 %and120, 9, !dbg !203
+  br i1 %cmp121, label %cond.true123, label %cond.false126, !dbg !203
+
+cond.true123:                                     ; preds = %cond.end116
+  %58 = load i32* %x, align 4, !dbg !203
+  %and124 = and i32 %58, 15, !dbg !203
+  %add125 = add nsw i32 48, %and124, !dbg !203
+  br label %cond.end129, !dbg !203
+
+cond.false126:                                    ; preds = %cond.end116
+  %59 = load i32* %x, align 4, !dbg !203
+  %and127 = and i32 %59, 15, !dbg !203
+  %add128 = add nsw i32 55, %and127, !dbg !203
+  br label %cond.end129, !dbg !203
+
+cond.end129:                                      ; preds = %cond.false126, %cond.true123
+  %cond130 = phi i32 [ %add125, %cond.true123 ], [ %add128, %cond.false126 ], !dbg !203
+  %conv131 = trunc i32 %cond130 to i8, !dbg !203
+  %arrayidx132 = getelementptr inbounds [5 x i8]* %res, i32 0, i32 3, !dbg !203
+  store i8 %conv131, i8* %arrayidx132, align 1, !dbg !203
+  %arraydecay133 = getelementptr inbounds [5 x i8]* %res, i32 0, i32 0, !dbg !204
+  call void @print(i8* %arraydecay133, i32 4) #4, !dbg !204
+  br label %if.end134, !dbg !205
+
+if.end134:                                        ; preds = %cond.end129, %if.else68
+  br label %if.end135
+
+if.end135:                                        ; preds = %if.end134, %cond.end64
+  br label %if.end137, !dbg !206
+
+if.else136:                                       ; preds = %if.else34
+  br label %incomprehensible_conversion, !dbg !207
+
+if.end137:                                        ; preds = %if.end135
+  br label %if.end138
+
+if.end138:                                        ; preds = %if.end137, %if.then30
+  br label %if.end139
+
+if.end139:                                        ; preds = %if.end138, %if.then24
+  br label %while.cond, !dbg !209
+
+while.end140:                                     ; preds = %while.cond
+  %parameters141 = bitcast i8** %parameters to i8*, !dbg !210
+  call void @llvm.va_end(i8* %parameters141), !dbg !210
+  %60 = load i32* %written, align 4, !dbg !211
+  ret i32 %60, !dbg !211
 }
 
 ; Function Attrs: nounwind
@@ -516,15 +709,15 @@ entry:
   %ic.addr = alloca i32, align 4
   %c = alloca i8, align 1
   store i32 %ic, i32* %ic.addr, align 4
-  call void @llvm.dbg.declare(metadata !{i32* %ic.addr}, metadata !184), !dbg !185
-  call void @llvm.dbg.declare(metadata !{i8* %c}, metadata !186), !dbg !187
-  %0 = load i32* %ic.addr, align 4, !dbg !187
-  %conv = trunc i32 %0 to i8, !dbg !187
-  store i8 %conv, i8* %c, align 1, !dbg !187
-  %1 = load i8* %c, align 1, !dbg !188
-  call void @terminal_putchar(i8 signext %1) #4, !dbg !188
-  %2 = load i32* %ic.addr, align 4, !dbg !189
-  ret i32 %2, !dbg !189
+  call void @llvm.dbg.declare(metadata !{i32* %ic.addr}, metadata !212), !dbg !213
+  call void @llvm.dbg.declare(metadata !{i8* %c}, metadata !214), !dbg !215
+  %0 = load i32* %ic.addr, align 4, !dbg !215
+  %conv = trunc i32 %0 to i8, !dbg !215
+  store i8 %conv, i8* %c, align 1, !dbg !215
+  %1 = load i8* %c, align 1, !dbg !216
+  call void @terminal_putchar(i8 signext %1) #4, !dbg !216
+  %2 = load i32* %ic.addr, align 4, !dbg !217
+  ret i32 %2, !dbg !217
 }
 
 declare void @terminal_putchar(i8 signext) #2
@@ -539,36 +732,36 @@ entry:
   %data_length.addr = alloca i32, align 4
   %i = alloca i32, align 4
   store i8* %data, i8** %data.addr, align 4
-  call void @llvm.dbg.declare(metadata !{i8** %data.addr}, metadata !190), !dbg !191
+  call void @llvm.dbg.declare(metadata !{i8** %data.addr}, metadata !218), !dbg !219
   store i32 %data_length, i32* %data_length.addr, align 4
-  call void @llvm.dbg.declare(metadata !{i32* %data_length.addr}, metadata !192), !dbg !191
-  call void @llvm.dbg.declare(metadata !{i32* %i}, metadata !193), !dbg !195
-  store i32 0, i32* %i, align 4, !dbg !195
-  br label %for.cond, !dbg !195
+  call void @llvm.dbg.declare(metadata !{i32* %data_length.addr}, metadata !220), !dbg !219
+  call void @llvm.dbg.declare(metadata !{i32* %i}, metadata !221), !dbg !223
+  store i32 0, i32* %i, align 4, !dbg !223
+  br label %for.cond, !dbg !223
 
 for.cond:                                         ; preds = %for.inc, %entry
-  %0 = load i32* %i, align 4, !dbg !195
-  %1 = load i32* %data_length.addr, align 4, !dbg !195
-  %cmp = icmp ult i32 %0, %1, !dbg !195
-  br i1 %cmp, label %for.body, label %for.end, !dbg !195
+  %0 = load i32* %i, align 4, !dbg !223
+  %1 = load i32* %data_length.addr, align 4, !dbg !223
+  %cmp = icmp ult i32 %0, %1, !dbg !223
+  br i1 %cmp, label %for.body, label %for.end, !dbg !223
 
 for.body:                                         ; preds = %for.cond
-  %2 = load i32* %i, align 4, !dbg !196
-  %3 = load i8** %data.addr, align 4, !dbg !196
-  %arrayidx = getelementptr inbounds i8* %3, i32 %2, !dbg !196
-  %4 = load i8* %arrayidx, align 1, !dbg !196
-  %conv = zext i8 %4 to i32, !dbg !196
-  %call = call i32 @putchar(i32 %conv) #4, !dbg !196
-  br label %for.inc, !dbg !196
+  %2 = load i32* %i, align 4, !dbg !224
+  %3 = load i8** %data.addr, align 4, !dbg !224
+  %arrayidx = getelementptr inbounds i8* %3, i32 %2, !dbg !224
+  %4 = load i8* %arrayidx, align 1, !dbg !224
+  %conv = zext i8 %4 to i32, !dbg !224
+  %call = call i32 @putchar(i32 %conv) #4, !dbg !224
+  br label %for.inc, !dbg !224
 
 for.inc:                                          ; preds = %for.body
-  %5 = load i32* %i, align 4, !dbg !195
-  %inc = add i32 %5, 1, !dbg !195
-  store i32 %inc, i32* %i, align 4, !dbg !195
-  br label %for.cond, !dbg !195
+  %5 = load i32* %i, align 4, !dbg !223
+  %inc = add i32 %5, 1, !dbg !223
+  store i32 %inc, i32* %i, align 4, !dbg !223
+  br label %for.cond, !dbg !223
 
 for.end:                                          ; preds = %for.cond
-  ret void, !dbg !197
+  ret void, !dbg !225
 }
 
 ; Function Attrs: nounwind
@@ -722,63 +915,91 @@ attributes #4 = { nobuiltin }
 !135 = metadata !{i32 786688, metadata !37, metadata !"rejected_bad_specifier", metadata !5, i32 85, metadata !136, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [rejected_bad_specifier] [line 85]
 !136 = metadata !{i32 786468, null, null, metadata !"_Bool", i32 0, i64 8, i64 8, i64 0, i32 0, i32 2} ; [ DW_TAG_base_type ] [_Bool] [line 0, size 8, align 8, offset 0, enc DW_ATE_boolean]
 !137 = metadata !{i32 85, i32 0, metadata !37, null}
-!138 = metadata !{i32 87, i32 0, metadata !37, null}
-!139 = metadata !{i32 89, i32 0, metadata !140, null}
-!140 = metadata !{i32 786443, metadata !1, metadata !141, i32 89, i32 0, i32 9} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!141 = metadata !{i32 786443, metadata !1, metadata !37, i32 88, i32 0, i32 8} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!142 = metadata !{i32 90, i32 0, metadata !143, null}
-!143 = metadata !{i32 786443, metadata !1, metadata !140, i32 90, i32 0, i32 10} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!144 = metadata !{i32 92, i32 0, metadata !143, null}
-!145 = metadata !{i32 93, i32 0, metadata !143, null}
-!146 = metadata !{i32 94, i32 0, metadata !143, null}
-!147 = metadata !{i32 95, i32 0, metadata !143, null}
-!148 = metadata !{i32 96, i32 0, metadata !143, null}
-!149 = metadata !{i32 97, i32 0, metadata !143, null}
-!150 = metadata !{i32 98, i32 0, metadata !143, null}
-!151 = metadata !{i32 786688, metadata !141, metadata !"format_begun_at", metadata !5, i32 101, metadata !16, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [format_begun_at] [line 101]
-!152 = metadata !{i32 101, i32 0, metadata !141, null}
-!153 = metadata !{i32 103, i32 0, metadata !154, null}
-!154 = metadata !{i32 786443, metadata !1, metadata !141, i32 103, i32 0, i32 11} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!155 = metadata !{i32 104, i32 0, metadata !154, null}
-!156 = metadata !{i32 106, i32 0, metadata !157, null}
-!157 = metadata !{i32 786443, metadata !1, metadata !141, i32 106, i32 0, i32 12} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!158 = metadata !{i32 107, i32 0, metadata !159, null}
-!159 = metadata !{i32 786443, metadata !1, metadata !157, i32 107, i32 0, i32 13} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!160 = metadata !{i32 109, i32 0, metadata !159, null}
-!161 = metadata !{i32 110, i32 0, metadata !159, null}
-!162 = metadata !{i32 111, i32 0, metadata !159, null}
-!163 = metadata !{i32 114, i32 0, metadata !164, null}
-!164 = metadata !{i32 786443, metadata !1, metadata !141, i32 114, i32 0, i32 14} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!165 = metadata !{i32 116, i32 0, metadata !166, null}
-!166 = metadata !{i32 786443, metadata !1, metadata !164, i32 115, i32 0, i32 15} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!167 = metadata !{i32 786688, metadata !166, metadata !"c", metadata !5, i32 117, metadata !18, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [c] [line 117]
-!168 = metadata !{i32 117, i32 0, metadata !166, null}
-!169 = metadata !{i32 118, i32 0, metadata !166, null}
-!170 = metadata !{i32 119, i32 0, metadata !166, null}
-!171 = metadata !{i32 120, i32 0, metadata !172, null}
-!172 = metadata !{i32 786443, metadata !1, metadata !164, i32 120, i32 0, i32 16} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!173 = metadata !{i32 122, i32 0, metadata !174, null}
-!174 = metadata !{i32 786443, metadata !1, metadata !172, i32 121, i32 0, i32 17} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!175 = metadata !{i32 786688, metadata !174, metadata !"s", metadata !5, i32 123, metadata !16, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [s] [line 123]
-!176 = metadata !{i32 123, i32 0, metadata !174, null}
-!177 = metadata !{i32 124, i32 0, metadata !174, null}
-!178 = metadata !{i32 125, i32 0, metadata !174, null}
+!138 = metadata !{i32 89, i32 0, metadata !37, null}
+!139 = metadata !{i32 91, i32 0, metadata !140, null}
+!140 = metadata !{i32 786443, metadata !1, metadata !141, i32 91, i32 0, i32 9} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!141 = metadata !{i32 786443, metadata !1, metadata !37, i32 90, i32 0, i32 8} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!142 = metadata !{i32 92, i32 0, metadata !143, null}
+!143 = metadata !{i32 786443, metadata !1, metadata !140, i32 92, i32 0, i32 10} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!144 = metadata !{i32 94, i32 0, metadata !143, null}
+!145 = metadata !{i32 95, i32 0, metadata !143, null}
+!146 = metadata !{i32 96, i32 0, metadata !143, null}
+!147 = metadata !{i32 97, i32 0, metadata !143, null}
+!148 = metadata !{i32 98, i32 0, metadata !143, null}
+!149 = metadata !{i32 99, i32 0, metadata !143, null}
+!150 = metadata !{i32 100, i32 0, metadata !143, null}
+!151 = metadata !{i32 786688, metadata !141, metadata !"format_begun_at", metadata !5, i32 103, metadata !16, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [format_begun_at] [line 103]
+!152 = metadata !{i32 103, i32 0, metadata !141, null}
+!153 = metadata !{i32 105, i32 0, metadata !154, null}
+!154 = metadata !{i32 786443, metadata !1, metadata !141, i32 105, i32 0, i32 11} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!155 = metadata !{i32 106, i32 0, metadata !154, null}
+!156 = metadata !{i32 108, i32 0, metadata !157, null}
+!157 = metadata !{i32 786443, metadata !1, metadata !141, i32 108, i32 0, i32 12} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!158 = metadata !{i32 109, i32 0, metadata !159, null}
+!159 = metadata !{i32 786443, metadata !1, metadata !157, i32 109, i32 0, i32 13} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!160 = metadata !{i32 111, i32 0, metadata !159, null}
+!161 = metadata !{i32 112, i32 0, metadata !159, null}
+!162 = metadata !{i32 113, i32 0, metadata !159, null}
+!163 = metadata !{i32 116, i32 0, metadata !164, null}
+!164 = metadata !{i32 786443, metadata !1, metadata !141, i32 116, i32 0, i32 14} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!165 = metadata !{i32 118, i32 0, metadata !166, null}
+!166 = metadata !{i32 786443, metadata !1, metadata !164, i32 117, i32 0, i32 15} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!167 = metadata !{i32 786688, metadata !166, metadata !"c", metadata !5, i32 119, metadata !18, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [c] [line 119]
+!168 = metadata !{i32 119, i32 0, metadata !166, null}
+!169 = metadata !{i32 120, i32 0, metadata !166, null}
+!170 = metadata !{i32 121, i32 0, metadata !166, null}
+!171 = metadata !{i32 122, i32 0, metadata !172, null}
+!172 = metadata !{i32 786443, metadata !1, metadata !164, i32 122, i32 0, i32 16} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!173 = metadata !{i32 124, i32 0, metadata !174, null}
+!174 = metadata !{i32 786443, metadata !1, metadata !172, i32 123, i32 0, i32 17} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!175 = metadata !{i32 786688, metadata !174, metadata !"s", metadata !5, i32 125, metadata !16, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [s] [line 125]
+!176 = metadata !{i32 125, i32 0, metadata !174, null}
+!177 = metadata !{i32 126, i32 0, metadata !174, null}
+!178 = metadata !{i32 127, i32 0, metadata !174, null}
 !179 = metadata !{i32 128, i32 0, metadata !180, null}
-!180 = metadata !{i32 786443, metadata !1, metadata !172, i32 127, i32 0, i32 18} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!181 = metadata !{i32 130, i32 0, metadata !141, null}
-!182 = metadata !{i32 132, i32 0, metadata !37, null}
-!183 = metadata !{i32 134, i32 0, metadata !37, null}
-!184 = metadata !{i32 786689, metadata !34, metadata !"ic", metadata !5, i32 16777281, metadata !22, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [ic] [line 65]
-!185 = metadata !{i32 65, i32 0, metadata !34, null}
-!186 = metadata !{i32 786688, metadata !34, metadata !"c", metadata !5, i32 67, metadata !18, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [c] [line 67]
-!187 = metadata !{i32 67, i32 0, metadata !34, null}
-!188 = metadata !{i32 68, i32 0, metadata !34, null}
-!189 = metadata !{i32 69, i32 0, metadata !34, null}
-!190 = metadata !{i32 786689, metadata !41, metadata !"data", metadata !5, i32 16777288, metadata !16, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [data] [line 72]
-!191 = metadata !{i32 72, i32 0, metadata !41, null}
-!192 = metadata !{i32 786689, metadata !41, metadata !"data_length", metadata !5, i32 33554504, metadata !11, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [data_length] [line 72]
-!193 = metadata !{i32 786688, metadata !194, metadata !"i", metadata !5, i32 74, metadata !11, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [i] [line 74]
-!194 = metadata !{i32 786443, metadata !1, metadata !41, i32 74, i32 0, i32 19} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
-!195 = metadata !{i32 74, i32 0, metadata !194, null}
-!196 = metadata !{i32 75, i32 0, metadata !194, null}
-!197 = metadata !{i32 76, i32 0, metadata !41, null}
+!180 = metadata !{i32 786443, metadata !1, metadata !172, i32 128, i32 0, i32 18} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!181 = metadata !{i32 130, i32 0, metadata !182, null}
+!182 = metadata !{i32 786443, metadata !1, metadata !180, i32 129, i32 0, i32 19} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!183 = metadata !{i32 786688, metadata !182, metadata !"x", metadata !5, i32 131, metadata !22, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [x] [line 131]
+!184 = metadata !{i32 131, i32 0, metadata !182, null}
+!185 = metadata !{i32 786688, metadata !182, metadata !"res", metadata !5, i32 132, metadata !186, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [res] [line 132]
+!186 = metadata !{i32 786433, null, null, metadata !"", i32 0, i64 40, i64 8, i32 0, i32 0, metadata !18, metadata !187, i32 0, null, null, null} ; [ DW_TAG_array_type ] [line 0, size 40, align 8, offset 0] [from char]
+!187 = metadata !{metadata !188}
+!188 = metadata !{i32 786465, i64 0, i64 5}       ; [ DW_TAG_subrange_type ] [0, 4]
+!189 = metadata !{i32 132, i32 0, metadata !182, null}
+!190 = metadata !{i32 134, i32 0, metadata !191, null}
+!191 = metadata !{i32 786443, metadata !1, metadata !182, i32 134, i32 0, i32 20} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!192 = metadata !{i32 136, i32 0, metadata !193, null}
+!193 = metadata !{i32 786443, metadata !1, metadata !191, i32 135, i32 0, i32 21} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!194 = metadata !{i32 137, i32 0, metadata !193, null}
+!195 = metadata !{i32 138, i32 0, metadata !193, null}
+!196 = metadata !{i32 139, i32 0, metadata !193, null}
+!197 = metadata !{i32 140, i32 0, metadata !198, null}
+!198 = metadata !{i32 786443, metadata !1, metadata !191, i32 140, i32 0, i32 22} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!199 = metadata !{i32 142, i32 0, metadata !200, null}
+!200 = metadata !{i32 786443, metadata !1, metadata !198, i32 141, i32 0, i32 23} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!201 = metadata !{i32 143, i32 0, metadata !200, null}
+!202 = metadata !{i32 144, i32 0, metadata !200, null}
+!203 = metadata !{i32 145, i32 0, metadata !200, null}
+!204 = metadata !{i32 147, i32 0, metadata !200, null}
+!205 = metadata !{i32 148, i32 0, metadata !200, null}
+!206 = metadata !{i32 149, i32 0, metadata !182, null}
+!207 = metadata !{i32 152, i32 0, metadata !208, null}
+!208 = metadata !{i32 786443, metadata !1, metadata !180, i32 151, i32 0, i32 24} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!209 = metadata !{i32 154, i32 0, metadata !141, null}
+!210 = metadata !{i32 156, i32 0, metadata !37, null}
+!211 = metadata !{i32 158, i32 0, metadata !37, null}
+!212 = metadata !{i32 786689, metadata !34, metadata !"ic", metadata !5, i32 16777281, metadata !22, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [ic] [line 65]
+!213 = metadata !{i32 65, i32 0, metadata !34, null}
+!214 = metadata !{i32 786688, metadata !34, metadata !"c", metadata !5, i32 67, metadata !18, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [c] [line 67]
+!215 = metadata !{i32 67, i32 0, metadata !34, null}
+!216 = metadata !{i32 68, i32 0, metadata !34, null}
+!217 = metadata !{i32 69, i32 0, metadata !34, null}
+!218 = metadata !{i32 786689, metadata !41, metadata !"data", metadata !5, i32 16777288, metadata !16, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [data] [line 72]
+!219 = metadata !{i32 72, i32 0, metadata !41, null}
+!220 = metadata !{i32 786689, metadata !41, metadata !"data_length", metadata !5, i32 33554504, metadata !11, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [data_length] [line 72]
+!221 = metadata !{i32 786688, metadata !222, metadata !"i", metadata !5, i32 74, metadata !11, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [i] [line 74]
+!222 = metadata !{i32 786443, metadata !1, metadata !41, i32 74, i32 0, i32 25} ; [ DW_TAG_lexical_block ] [/home/gbps/Desktop/Projects/os_notshared/pandos/src/string.c]
+!223 = metadata !{i32 74, i32 0, metadata !222, null}
+!224 = metadata !{i32 75, i32 0, metadata !222, null}
+!225 = metadata !{i32 76, i32 0, metadata !41, null}

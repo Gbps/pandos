@@ -41,6 +41,9 @@ run-bochs: all
 	bochs
 
 run: all
+	qemu-system-i386 -cdrom pandos.iso -s
+
+run-gdb: all
 	#gnome-terminal -e "gdb -x 'bochs-gdb-conf'"
 	gnome-terminal -e "gdb -x 'qemu-gdb'"
 	qemu-system-i386 -cdrom pandos.iso -S -s

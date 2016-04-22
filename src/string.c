@@ -84,6 +84,8 @@ int printf(const char* restrict format, ...)
     size_t amount;
     bool rejected_bad_specifier = false;
  
+    #define TO_HEX(i) (i <= 9 ? '0' + i : 'A' - 10 + i)
+
     while ( *format != '\0' )
     {
         if ( *format != '%' )
@@ -122,6 +124,28 @@ int printf(const char* restrict format, ...)
             format++;
             const char* s = va_arg(parameters, const char*);
             print(s, strlen(s));
+        }
+        else if ( *format == 'x' )
+        {
+            format++;
+            int x = (int) va_arg(parameters, int);
+            char res[5];
+
+            if (x <= 0xFF)
+            {
+                res[0] = TO_HEX(((x & 0xF0) >> 4));
+                res[1] = TO_HEX((x & 0xF));
+                print(res, 2);
+            }
+            else if (x <= 0xFFFF)
+            {
+                res[0] = TO_HEX(((x & 0xF000) >> 12));   
+                res[1] = TO_HEX(((x & 0x0F00) >> 8));
+                res[2] = TO_HEX(((x & 0x00F0) >> 4));
+                res[3] = TO_HEX((x & 0x000F));
+
+                print(res, 4);
+            }
         }
         else
         {

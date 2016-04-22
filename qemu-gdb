@@ -1,5 +1,5 @@
 target remote localhost:1234
 symbol-file ./build/pandos.bin
-hbreak kernel_main
+#hbreak kernel_main
 c
 

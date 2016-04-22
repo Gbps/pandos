@@ -33,10 +33,11 @@ void kernel_main()
     test_mem_2 = kmalloc(10);
 
     terminal_writestring((const char*)test_mem);
-
+    
     while(true)
     {
         // Halt and wait for interrupts now that kernel is done.
         asm("hlt");
     }
+    
 }

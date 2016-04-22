@@ -3,6 +3,8 @@
 #include "stddef.h"
 #include "inline.c"
 #include "terminal.h"
+#include "keyboard_layout.h"
+#include "string.h"
 
 #define IDT_SIZE 1024
 
@@ -44,17 +46,21 @@ struct interrupt_frame
     uint32_t ss;
 };
 
-
-void keyboard_handler(uint8_t scancode)
-{
-    terminal_writestring("Got keypress!\n");
-}
-
 void idt_init(void)
 {
     unsigned long keyboard_address;
     unsigned long idt_addr;
     unsigned long idt_ptr[2];
+
+    uint32_t catchall_addr = (uint32_t)&WRAP_catchall;
+    /*for( int i = 0; i < IDT_SIZE/8; i++)
+    {
+        IDT[i].offset_lowerbits = catchall_addr & 0xFFFF;
+        IDT[i].selector = KERNEL_CODE_SEGMENT_OFFSET;
+        IDT[i].zero = 0;
+        IDT[i].type_attr = 0x8E;
+        IDT[i].offset_higherbits = (catchall_addr & 0xFFFF0000) >> 16;
+    }*/
 
     keyboard_address = (unsigned long)&WRAP_keyboard_handler;
     IDT[0x21].offset_lowerbits = keyboard_address & 0xFFFF;

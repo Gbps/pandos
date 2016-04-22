@@ -27,3 +27,4 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y);
 bool terminal_handlewhitespace(char c);
 void terminal_putchar(char c);
 void terminal_writestring(const char* data);
+void terminal_ondirectionkey(uint8_t scancode);
