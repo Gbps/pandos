@@ -1,5 +1,5 @@
 # pandos
-An x86 from-scratch operating system and CTF challenges.
+A tiny x86 from-scratch BIOS operating system that I wrote for fun, and to learn about x86 operating systems. It's very small and doesn't do much. It compiles with Clang/LLVM and runs in Bochs/QEMU/VMWare. 
 
 # What do I do with this?
-It's a super simple BIOS OS that runs in Bochs, but also works on physical boots as well. Just a simple little project, obviously never intended for any real use.
+Just a simple little project, obviously never intended for any real use.
